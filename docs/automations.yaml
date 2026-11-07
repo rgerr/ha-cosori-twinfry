@@ -1,0 +1,85 @@
+# Voorbeeldautomatiseringen voor COSORI TwinFry.
+# Pas notify.mobile_app_telefoon aan naar je eigen meldingsdienst.
+# Entity-ID's: apparaatnaam "TwinFry", systeemtaal Nederlands.
+
+# 1. Melding wanneer een zone klaar is (tijd verstreken).
+- alias: "Airfryer: zone klaar"
+  triggers:
+    - trigger: state
+      entity_id:
+        - event.twinfry_zone_1_gebeurtenis
+        - event.twinfry_zone_2_gebeurtenis
+  conditions:
+    - condition: template
+      value_template: "{{ trigger.to_state.attributes.event_type == 'finished' }}"
+  actions:
+    - action: notify.mobile_app_telefoon
+      data:
+        title: Airfryer
+        message: "{{ trigger.to_state.name | replace(' gebeurtenis', '') }} is klaar."
+
+# 2. Melding wanneer een zone voortijdig stopt (op het apparaat of in de app).
+- alias: "Airfryer: zone gestopt"
+  triggers:
+    - trigger: state
+      entity_id:
+        - event.twinfry_zone_1_gebeurtenis
+        - event.twinfry_zone_2_gebeurtenis
+  conditions:
+    - condition: template
+      value_template: "{{ trigger.to_state.attributes.event_type == 'stopped' }}"
+  actions:
+    - action: notify.mobile_app_telefoon
+      data:
+        title: Airfryer
+        message: "{{ trigger.to_state.name | replace(' gebeurtenis', '') }} is gestopt voordat de tijd om was."
+
+# 3. Melding wanneer de resterende tijd onder een instelbare grens komt.
+#    Maak eerst een helper input_number.airfryer_waarschuwing (minuten, 1-15).
+- alias: "Airfryer: bijna klaar"
+  triggers:
+    - trigger: numeric_state
+      entity_id:
+        - sensor.twinfry_zone_1_resterende_tijd
+        - sensor.twinfry_zone_2_resterende_tijd
+      below: input_number.airfryer_waarschuwing
+  actions:
+    - action: notify.mobile_app_telefoon
+      data:
+        title: Airfryer
+        message: >-
+          {{ trigger.to_state.name | replace(' resterende tijd', '') }}:
+          nog {{ trigger.to_state.state | int }} min. Tijd om te schudden of te keren?
+
+# 4. Waarschuwing als een start niet bevestigd werd.
+- alias: "Airfryer: start mislukt"
+  triggers:
+    - trigger: state
+      entity_id: sensor.twinfry_laatste_start
+      to: failed
+  actions:
+    - action: notify.mobile_app_telefoon
+      data:
+        title: Airfryer – start niet bevestigd
+        message: "{{ state_attr('sensor.twinfry_laatste_start', 'message') }}"
+
+# 5. Starten na een expliciete opdracht (script, aan te roepen vanaf een
+#    dashboardknop of spraakassistent). Er is GEEN automatische trigger:
+#    de gebruiker start het script zelf.
+#    Zet dit in scripts.yaml:
+#
+# airfryer_friet_zone_1:
+#   alias: "Airfryer: friet in zone 1"
+#   icon: mdi:french-fries
+#   sequence:
+#     - action: cosori_twinfry.start_cook
+#       data:
+#         device_id: <device-id van de TwinFry>
+#         zone: zone_1
+#         program: airfry
+#         temperature: 200
+#         duration: 18
+#       response_variable: resultaat
+#     - action: notify.mobile_app_telefoon
+#       data:
+#         message: "Friet gestart via {{ resultaat.method }}."

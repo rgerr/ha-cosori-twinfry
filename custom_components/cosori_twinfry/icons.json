@@ -1,0 +1,35 @@
+{
+  "entity": {
+    "button": {
+      "zone_start": { "default": "mdi:play" },
+      "zone_stop": { "default": "mdi:stop" },
+      "start_both": { "default": "mdi:play-box-multiple" },
+      "match_start": { "default": "mdi:content-copy" },
+      "stop_both": { "default": "mdi:stop-circle" }
+    },
+    "sensor": {
+      "zone_status": { "default": "mdi:pot-steam" },
+      "zone_program": { "default": "mdi:chef-hat" },
+      "zone_set_time": { "default": "mdi:timer-cog-outline" },
+      "zone_remaining_time": { "default": "mdi:timer-sand" },
+      "zone_ends_at": { "default": "mdi:clock-end" },
+      "device_status": { "default": "mdi:toaster-oven" },
+      "sync_mode": { "default": "mdi:sync" },
+      "last_poll": { "default": "mdi:cloud-check-outline" },
+      "last_start": { "default": "mdi:clipboard-check-outline" }
+    },
+    "select": {
+      "zone_program_setting": { "default": "mdi:chef-hat" }
+    },
+    "number": {
+      "zone_time": { "default": "mdi:timer-edit-outline" }
+    },
+    "event": {
+      "zone_event": { "default": "mdi:bell-ring-outline" }
+    }
+  },
+  "services": {
+    "start_cook": { "service": "mdi:play" },
+    "stop_cook": { "service": "mdi:stop" }
+  }
+}

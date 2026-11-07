@@ -1,0 +1,2 @@
+pytest-homeassistant-custom-component
+pyvesync>=3.5.0,<3.6

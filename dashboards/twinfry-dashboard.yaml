@@ -1,0 +1,175 @@
+# COSORI TwinFry – voorbeeld-dashboard (alleen standaard Home Assistant-kaarten)
+#
+# Gebruik: Instellingen → Dashboards → Dashboard toevoegen → "Nieuw dashboard
+# vanaf nul" → ⋮ → Raw-configuratie-editor → plak dit bestand.
+#
+# De entity-ID's gaan uit van apparaatnaam "TwinFry" en Nederlands als
+# systeemtaal (getest in tests/test_entities.py). Heet je airfryer in VeSync
+# anders, vervang dan "twinfry_" door de naam van jouw apparaat.
+#
+# Startknoppen vragen eerst om bevestiging, zodat een per ongeluk getikte
+# tegel geen kookproces start.
+
+title: Airfryer
+views:
+  - title: TwinFry
+    path: twinfry
+    icon: mdi:toaster-oven
+    type: sections
+    max_columns: 3
+    sections:
+      - type: grid
+        cards:
+          - type: heading
+            heading: Airfryer
+            icon: mdi:toaster-oven
+          - type: tile
+            entity: sensor.twinfry_status
+            name: Status
+            grid_options: { columns: 12 }
+          - type: tile
+            entity: sensor.twinfry_laatste_start
+            name: Laatste start
+          - type: tile
+            entity: binary_sensor.twinfry_online
+            name: Verbinding
+          - type: tile
+            entity: button.twinfry_start_beide_zones
+            name: Start beide zones
+            icon: mdi:play-box-multiple
+            tap_action:
+              action: perform-action
+              perform_action: button.press
+              target: { entity_id: button.twinfry_start_beide_zones }
+              confirmation:
+                text: Beide zones starten met hun eigen instellingen?
+          - type: tile
+            entity: button.twinfry_match_start_zone_1_in_beide
+            name: Match-start
+            icon: mdi:content-copy
+            tap_action:
+              action: perform-action
+              perform_action: button.press
+              target: { entity_id: button.twinfry_match_start_zone_1_in_beide }
+              confirmation:
+                text: Beide zones starten met de instellingen van zone 1?
+          - type: tile
+            entity: button.twinfry_stop_beide_zones
+            name: Stop beide zones
+            icon: mdi:stop-circle
+            color: red
+            tap_action:
+              action: perform-action
+              perform_action: button.press
+              target: { entity_id: button.twinfry_stop_beide_zones }
+          - type: entities
+            title: Details
+            state_color: true
+            entities:
+              - entity: sensor.twinfry_sync_modus
+                name: Sync-modus
+              - entity: sensor.twinfry_laatste_geslaagde_update
+                name: Laatste geslaagde update
+                format: relative
+
+      - type: grid
+        cards:
+          - type: heading
+            heading: Zone 1 (links)
+            icon: mdi:numeric-1-box
+          - type: tile
+            entity: sensor.twinfry_zone_1_status
+            name: Status
+            grid_options: { columns: 12 }
+          - type: tile
+            entity: sensor.twinfry_zone_1_resterende_tijd
+            name: Resterend
+          - type: tile
+            entity: sensor.twinfry_zone_1_klaar_om
+            name: Klaar om
+          - type: tile
+            entity: sensor.twinfry_zone_1_programma
+            name: Programma
+          - type: tile
+            entity: sensor.twinfry_zone_1_ingestelde_temperatuur
+            name: Temperatuur
+          - type: tile
+            entity: button.twinfry_start_zone_1
+            name: Start zone 1
+            icon: mdi:play
+            color: green
+            tap_action:
+              action: perform-action
+              perform_action: button.press
+              target: { entity_id: button.twinfry_start_zone_1 }
+              confirmation:
+                text: Zone 1 starten?
+          - type: tile
+            entity: button.twinfry_stop_zone_1
+            name: Stop zone 1
+            icon: mdi:stop
+            color: red
+            tap_action:
+              action: perform-action
+              perform_action: button.press
+              target: { entity_id: button.twinfry_stop_zone_1 }
+          - type: entities
+            title: Instellingen volgende start
+            entities:
+              - entity: select.twinfry_zone_1_programmakeuze
+                name: Programma
+              - entity: number.twinfry_zone_1_temperatuur
+                name: Temperatuur
+              - entity: number.twinfry_zone_1_kooktijd
+                name: Kooktijd
+
+      - type: grid
+        cards:
+          - type: heading
+            heading: Zone 2 (rechts)
+            icon: mdi:numeric-2-box
+          - type: tile
+            entity: sensor.twinfry_zone_2_status
+            name: Status
+            grid_options: { columns: 12 }
+          - type: tile
+            entity: sensor.twinfry_zone_2_resterende_tijd
+            name: Resterend
+          - type: tile
+            entity: sensor.twinfry_zone_2_klaar_om
+            name: Klaar om
+          - type: tile
+            entity: sensor.twinfry_zone_2_programma
+            name: Programma
+          - type: tile
+            entity: sensor.twinfry_zone_2_ingestelde_temperatuur
+            name: Temperatuur
+          - type: tile
+            entity: button.twinfry_start_zone_2
+            name: Start zone 2
+            icon: mdi:play
+            color: green
+            tap_action:
+              action: perform-action
+              perform_action: button.press
+              target: { entity_id: button.twinfry_start_zone_2 }
+              confirmation:
+                text: Zone 2 starten?
+          - type: tile
+            entity: button.twinfry_stop_zone_2
+            name: Stop zone 2
+            icon: mdi:stop
+            color: red
+            tap_action:
+              action: perform-action
+              perform_action: button.press
+              target: { entity_id: button.twinfry_stop_zone_2 }
+          - type: entities
+            title: Instellingen volgende start
+            entities:
+              - entity: select.twinfry_zone_2_programmakeuze
+                name: Programma
+              - entity: number.twinfry_zone_2_temperatuur
+                name: Temperatuur
+              - entity: number.twinfry_zone_2_kooktijd
+                name: Kooktijd

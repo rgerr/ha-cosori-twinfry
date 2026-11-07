@@ -1,0 +1,360 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "VeSync-account",
+        "description": "Log in met het account van de VeSync-app. Het wachtwoord wordt in Home Assistant opgeslagen en nooit gelogd.",
+        "data": {
+          "username": "E-mailadres",
+          "password": "Wachtwoord",
+          "country_code": "Land van het account (ISO-code, bijv. NL)"
+        }
+      },
+      "device": {
+        "title": "Kies de airfryer",
+        "data": {
+          "device_cid": "Airfryer"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Opnieuw inloggen",
+        "description": "VeSync weigert de opgeslagen login voor {username}. Vul het wachtwoord opnieuw in.",
+        "data": {
+          "password": "Wachtwoord"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Login geweigerd door VeSync.",
+      "cannot_connect": "VeSync is niet bereikbaar.",
+      "unknown": "Onverwachte fout, zie het logboek.",
+      "no_devices": "Geen COSORI-airfryer met twee zones gevonden in dit account.",
+      "device_missing": "De ingestelde airfryer staat niet meer in dit account."
+    },
+    "abort": {
+      "already_configured": "Deze airfryer is al ingesteld.",
+      "reauth_successful": "Login bijgewerkt."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Startmethode en tijden",
+        "description": "Native start via VeSync. SwitchBot laadt het programma, wacht tot de airfryer meldt dat hij klaarstaat en laat dan de Bot de fysieke startknop indrukken. Automatisch probeert eerst native en gebruikt de SwitchBot alleen als de airfryer op zijn knop wacht. Een start telt pas als VeSync meldt dat de zone kookt. De drukduur van de Bot stel je in de SwitchBot-app in; Home Assistant kan die niet wijzigen.",
+        "data": {
+          "start_method": "Startmethode",
+          "switchbot_entity": "SwitchBot Bot (knop of schakelaar in press mode)",
+          "press_delay": "Wachttijd vóór het indrukken",
+          "ready_timeout": "Time-out wachten op 'klaar'",
+          "confirm_timeout": "Time-out bevestiging start",
+          "scan_interval_active": "Poll-interval tijdens koken",
+          "scan_interval_idle": "Poll-interval in rust"
+        }
+      }
+    },
+    "error": {
+      "switchbot_required": "Kies de SwitchBot-entiteit voor deze startmethode.",
+      "switchbot_wrong_domain": "Kies een knop- of schakelaarentiteit.",
+      "switchbot_not_found": "Entiteit niet gevonden.",
+      "switchbot_switch_mode": "Deze Bot staat in switch mode; zet hem in de SwitchBot-app op press mode."
+    }
+  },
+  "selector": {
+    "start_method": {
+      "options": {
+        "native": "Native (VeSync)",
+        "switchbot": "SwitchBot Button Pusher",
+        "auto": "Automatisch (eerst native, dan SwitchBot)"
+      }
+    },
+    "zone": {
+      "options": {
+        "zone_1": "Zone 1 (links)",
+        "zone_2": "Zone 2 (rechts)",
+        "both": "Beide zones (eigen instellingen)",
+        "match": "Match: instellingen zone 1 in beide zones",
+        "whole": "Hele mand (scheidingswand eruit)"
+      }
+    },
+    "program": {
+      "options": {
+        "airfry": "Airfry",
+        "roast": "Braden",
+        "bake": "Bakken",
+        "grill": "Grillen",
+        "reheat": "Opwarmen",
+        "dry": "Drogen"
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "zone_status": {
+        "name": "Zone {zone} status",
+        "state": {
+          "standby": "Inactief",
+          "ready": "Klaar (wacht op startknop)",
+          "cooking": "Bezig",
+          "paused": "Gepauzeerd",
+          "basket_out": "Mand eruit",
+          "hold": "Wacht (sync)",
+          "unknown": "Onbekend"
+        }
+      },
+      "zone_program": {
+        "name": "Zone {zone} programma",
+        "state": {
+          "airfry": "Airfry",
+          "roast": "Braden",
+          "bake": "Bakken",
+          "grill": "Grillen",
+          "reheat": "Opwarmen",
+          "dry": "Drogen"
+        }
+      },
+      "zone_set_temperature": {
+        "name": "Zone {zone} ingestelde temperatuur"
+      },
+      "zone_set_time": {
+        "name": "Zone {zone} ingestelde tijd"
+      },
+      "zone_remaining_time": {
+        "name": "Zone {zone} resterende tijd"
+      },
+      "zone_ends_at": {
+        "name": "Zone {zone} klaar om"
+      },
+      "device_status": {
+        "name": "Status",
+        "state": {
+          "offline": "Offline",
+          "idle": "Inactief",
+          "ready": "Klaar",
+          "cooking": "Bezig",
+          "paused": "Gepauzeerd"
+        }
+      },
+      "sync_mode": {
+        "name": "Sync-modus",
+        "state": {
+          "off": "Uit",
+          "match": "Match",
+          "sync": "Sync"
+        }
+      },
+      "last_poll": {
+        "name": "Laatste geslaagde update"
+      },
+      "last_start": {
+        "name": "Laatste start",
+        "state": {
+          "none": "Geen",
+          "in_progress": "Bezig",
+          "success": "Bevestigd",
+          "failed": "Mislukt"
+        }
+      }
+    },
+    "binary_sensor": {
+      "zone_cooking": {
+        "name": "Zone {zone} kookt"
+      },
+      "online": {
+        "name": "Online"
+      }
+    },
+    "button": {
+      "zone_start": {
+        "name": "Start zone {zone}"
+      },
+      "zone_stop": {
+        "name": "Stop zone {zone}"
+      },
+      "start_both": {
+        "name": "Start beide zones"
+      },
+      "match_start": {
+        "name": "Match-start (zone 1 in beide)"
+      },
+      "stop_both": {
+        "name": "Stop beide zones"
+      }
+    },
+    "number": {
+      "zone_temperature": {
+        "name": "Zone {zone} temperatuur"
+      },
+      "zone_time": {
+        "name": "Zone {zone} kooktijd"
+      }
+    },
+    "select": {
+      "zone_program_setting": {
+        "name": "Zone {zone} programmakeuze",
+        "state": {
+          "airfry": "Airfry",
+          "roast": "Braden",
+          "bake": "Bakken",
+          "grill": "Grillen",
+          "reheat": "Opwarmen",
+          "dry": "Drogen"
+        }
+      }
+    },
+    "event": {
+      "zone_event": {
+        "name": "Zone {zone} gebeurtenis",
+        "state_attributes": {
+          "event_type": {
+            "state": {
+              "started": "Gestart",
+              "ready": "Klaar om te starten",
+              "paused": "Gepauzeerd",
+              "resumed": "Hervat",
+              "finished": "Klaar",
+              "stopped": "Gestopt"
+            }
+          }
+        }
+      }
+    }
+  },
+  "exceptions": {
+    "auth_failed": {
+      "message": "VeSync weigert de login; stel het account opnieuw in."
+    },
+    "cannot_connect": {
+      "message": "VeSync is niet bereikbaar ({error})."
+    },
+    "device_not_found": {
+      "message": "De airfryer staat niet in het VeSync-account."
+    },
+    "poll_failed": {
+      "message": "Bijwerken van de airfryer mislukt: {error}"
+    },
+    "poll_timeout": {
+      "message": "VeSync antwoordde niet op tijd."
+    },
+    "start_in_progress": {
+      "message": "Er loopt al een start; wacht tot die klaar is."
+    },
+    "zone_busy": {
+      "message": "Zone {zone} is bezig ({status}); stop die eerst."
+    },
+    "other_zone_active": {
+      "message": "Zone {zone} is actief. De SwitchBot drukt niet terwijl een andere zone loopt, omdat de start/pauzeknop die zone kan pauzeren."
+    },
+    "both_needs_equal_settings": {
+      "message": "Met de SwitchBot kunnen beide zones alleen samen starten met identieke instellingen (één druk). Gebruik Match-start of start de zones na elkaar."
+    },
+    "command_rejected": {
+      "message": "De airfryer of VeSync weigerde de opdracht: {error}"
+    },
+    "command_timeout": {
+      "message": "De opdracht aan VeSync duurde te lang."
+    },
+    "waiting_for_button": {
+      "message": "De airfryer heeft het programma aangenomen maar wacht op zijn startknop. Druk op start op de airfryer of stel een SwitchBot in."
+    },
+    "start_not_confirmed": {
+      "message": "De API accepteerde de start, maar VeSync meldde binnen {timeout} s niet dat de zone kookt."
+    },
+    "not_ready": {
+      "message": "De airfryer meldde binnen {timeout} s geen 'klaar'; de SwitchBot is niet ingedrukt."
+    },
+    "not_confirmed_after_press": {
+      "message": "De SwitchBot heeft gedrukt, maar VeSync meldde binnen {timeout} s niet dat de zone kookt."
+    },
+    "ready_start_unavailable": {
+      "message": "De geïnstalleerde pyvesync-versie ondersteunt het klaarzet-verzoek voor de SwitchBot-route niet."
+    },
+    "not_reachable": {
+      "message": "De airfryer kon niet worden uitgelezen ({error})."
+    },
+    "device_offline": {
+      "message": "VeSync meldt de airfryer als offline."
+    },
+    "switchbot_not_configured": {
+      "message": "Geen SwitchBot-entiteit ingesteld."
+    },
+    "switchbot_wrong_domain": {
+      "message": "{entity_id} is geen knop of schakelaar."
+    },
+    "switchbot_unavailable": {
+      "message": "SwitchBot {entity_id} is niet beschikbaar."
+    },
+    "switchbot_switch_mode": {
+      "message": "SwitchBot {entity_id} staat in switch mode; zet hem op press mode."
+    },
+    "switchbot_failed": {
+      "message": "Indrukken met SwitchBot {entity_id} mislukt ({error})."
+    },
+    "stop_rejected": {
+      "message": "Stoppen van zone {zone} geweigerd: {error}"
+    },
+    "stop_not_confirmed": {
+      "message": "VeSync bevestigde het stoppen niet binnen {timeout} s."
+    },
+    "program_not_supported": {
+      "message": "Deze airfryer heeft geen programma {program}."
+    },
+    "temperature_out_of_range": {
+      "message": "{temperature} valt buiten {min}-{max} voor {program}."
+    },
+    "time_out_of_range": {
+      "message": "{minutes} min valt buiten 1-{max} min voor {program}."
+    },
+    "unknown_device": {
+      "message": "Kies een COSORI TwinFry-apparaat."
+    },
+    "entry_not_loaded": {
+      "message": "De airfryer is niet geladen."
+    }
+  },
+  "services": {
+    "start_cook": {
+      "name": "Kookproces starten",
+      "description": "Start een kookproces na een expliciete opdracht. Opgegeven waarden vervangen eerst de klaargezette instellingen van de zone. Rondt pas af als VeSync bevestigt dat de zone kookt.",
+      "fields": {
+        "device_id": {
+          "name": "Airfryer",
+          "description": "Het COSORI TwinFry-apparaat."
+        },
+        "zone": {
+          "name": "Zone",
+          "description": "Welke zone(s)."
+        },
+        "program": {
+          "name": "Programma",
+          "description": "Eerst klaar te zetten programma (laadt de standaardwaarden)."
+        },
+        "temperature": {
+          "name": "Temperatuur",
+          "description": "Klaar te zetten temperatuur."
+        },
+        "duration": {
+          "name": "Kooktijd",
+          "description": "Klaar te zetten minuten."
+        },
+        "method": {
+          "name": "Startmethode",
+          "description": "Overschrijft eenmalig de ingestelde startmethode."
+        }
+      }
+    },
+    "stop_cook": {
+      "name": "Kookproces stoppen",
+      "description": "Beëindig het kookproces (of een klaargezet programma) en wacht tot VeSync 'inactief' meldt.",
+      "fields": {
+        "device_id": {
+          "name": "Airfryer",
+          "description": "Het COSORI TwinFry-apparaat."
+        },
+        "zone": {
+          "name": "Zone",
+          "description": "Welke zone(s)."
+        }
+      }
+    }
+  }
+}

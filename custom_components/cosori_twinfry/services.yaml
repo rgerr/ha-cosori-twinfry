@@ -1,0 +1,69 @@
+start_cook:
+  fields:
+    device_id:
+      required: true
+      selector:
+        device:
+          integration: cosori_twinfry
+    zone:
+      required: true
+      default: zone_1
+      selector:
+        select:
+          translation_key: zone
+          options:
+            - zone_1
+            - zone_2
+            - both
+            - match
+            - whole
+    program:
+      selector:
+        select:
+          translation_key: program
+          options:
+            - airfry
+            - roast
+            - bake
+            - grill
+            - reheat
+            - dry
+    temperature:
+      selector:
+        number:
+          min: 30
+          max: 250
+          step: 5
+          unit_of_measurement: "°C"
+    duration:
+      selector:
+        number:
+          min: 1
+          max: 720
+          step: 1
+          unit_of_measurement: min
+    method:
+      selector:
+        select:
+          translation_key: start_method
+          options:
+            - native
+            - switchbot
+            - auto
+stop_cook:
+  fields:
+    device_id:
+      required: true
+      selector:
+        device:
+          integration: cosori_twinfry
+    zone:
+      required: true
+      default: both
+      selector:
+        select:
+          translation_key: zone
+          options:
+            - zone_1
+            - zone_2
+            - both

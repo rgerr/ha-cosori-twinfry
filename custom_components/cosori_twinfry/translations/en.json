@@ -1,0 +1,360 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "VeSync account",
+        "description": "Log in with the account you use in the VeSync app. The password is stored in Home Assistant and never logged.",
+        "data": {
+          "username": "E-mail address",
+          "password": "Password",
+          "country_code": "Account country (ISO code, e.g. NL)"
+        }
+      },
+      "device": {
+        "title": "Choose the air fryer",
+        "data": {
+          "device_cid": "Air fryer"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Log in again",
+        "description": "VeSync rejected the stored login for {username}. Enter the password again.",
+        "data": {
+          "password": "Password"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Login rejected by VeSync.",
+      "cannot_connect": "Could not reach VeSync.",
+      "unknown": "Unexpected error, see the log.",
+      "no_devices": "No COSORI dual-chamber air fryer found in this account.",
+      "device_missing": "The configured air fryer is no longer in this account."
+    },
+    "abort": {
+      "already_configured": "This air fryer is already configured.",
+      "reauth_successful": "Login updated."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Start method and timing",
+        "description": "Native sends the start through VeSync. SwitchBot loads the program, waits until the fryer reports it is ready and then lets the Bot press the physical start button. Automatic tries native first and uses the SwitchBot only when the fryer waits for its button. A start only counts once VeSync reports the zone cooking. The Bot's press duration is set in the SwitchBot app; Home Assistant cannot change it.",
+        "data": {
+          "start_method": "Start method",
+          "switchbot_entity": "SwitchBot Bot (button or switch in press mode)",
+          "press_delay": "Wait before pressing",
+          "ready_timeout": "Time-out waiting for 'ready'",
+          "confirm_timeout": "Time-out confirming the start",
+          "scan_interval_active": "Poll interval while cooking",
+          "scan_interval_idle": "Poll interval while idle"
+        }
+      }
+    },
+    "error": {
+      "switchbot_required": "Choose the SwitchBot entity for this start method.",
+      "switchbot_wrong_domain": "Choose a button or switch entity.",
+      "switchbot_not_found": "Entity not found.",
+      "switchbot_switch_mode": "This Bot is in switch mode; set it to press mode in the SwitchBot app."
+    }
+  },
+  "selector": {
+    "start_method": {
+      "options": {
+        "native": "Native (VeSync)",
+        "switchbot": "SwitchBot Button Pusher",
+        "auto": "Automatic (native, then SwitchBot)"
+      }
+    },
+    "zone": {
+      "options": {
+        "zone_1": "Zone 1 (left)",
+        "zone_2": "Zone 2 (right)",
+        "both": "Both zones (each its own settings)",
+        "match": "Match: zone 1 settings in both zones",
+        "whole": "Whole basket (divider removed)"
+      }
+    },
+    "program": {
+      "options": {
+        "airfry": "Air fry",
+        "roast": "Roast",
+        "bake": "Bake",
+        "grill": "Grill",
+        "reheat": "Reheat",
+        "dry": "Dry"
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "zone_status": {
+        "name": "Zone {zone} status",
+        "state": {
+          "standby": "Idle",
+          "ready": "Ready (waiting for start button)",
+          "cooking": "Cooking",
+          "paused": "Paused",
+          "basket_out": "Basket out",
+          "hold": "Waiting (sync)",
+          "unknown": "Unknown"
+        }
+      },
+      "zone_program": {
+        "name": "Zone {zone} program",
+        "state": {
+          "airfry": "Air fry",
+          "roast": "Roast",
+          "bake": "Bake",
+          "grill": "Grill",
+          "reheat": "Reheat",
+          "dry": "Dry"
+        }
+      },
+      "zone_set_temperature": {
+        "name": "Zone {zone} set temperature"
+      },
+      "zone_set_time": {
+        "name": "Zone {zone} set time"
+      },
+      "zone_remaining_time": {
+        "name": "Zone {zone} remaining time"
+      },
+      "zone_ends_at": {
+        "name": "Zone {zone} ready at"
+      },
+      "device_status": {
+        "name": "Status",
+        "state": {
+          "offline": "Offline",
+          "idle": "Idle",
+          "ready": "Ready",
+          "cooking": "Cooking",
+          "paused": "Paused"
+        }
+      },
+      "sync_mode": {
+        "name": "Sync mode",
+        "state": {
+          "off": "Off",
+          "match": "Match",
+          "sync": "Sync"
+        }
+      },
+      "last_poll": {
+        "name": "Last successful update"
+      },
+      "last_start": {
+        "name": "Last start",
+        "state": {
+          "none": "None",
+          "in_progress": "In progress",
+          "success": "Confirmed",
+          "failed": "Failed"
+        }
+      }
+    },
+    "binary_sensor": {
+      "zone_cooking": {
+        "name": "Zone {zone} cooking"
+      },
+      "online": {
+        "name": "Online"
+      }
+    },
+    "button": {
+      "zone_start": {
+        "name": "Start zone {zone}"
+      },
+      "zone_stop": {
+        "name": "Stop zone {zone}"
+      },
+      "start_both": {
+        "name": "Start both zones"
+      },
+      "match_start": {
+        "name": "Match start (zone 1 settings in both)"
+      },
+      "stop_both": {
+        "name": "Stop both zones"
+      }
+    },
+    "number": {
+      "zone_temperature": {
+        "name": "Zone {zone} temperature"
+      },
+      "zone_time": {
+        "name": "Zone {zone} cook time"
+      }
+    },
+    "select": {
+      "zone_program_setting": {
+        "name": "Zone {zone} program choice",
+        "state": {
+          "airfry": "Air fry",
+          "roast": "Roast",
+          "bake": "Bake",
+          "grill": "Grill",
+          "reheat": "Reheat",
+          "dry": "Dry"
+        }
+      }
+    },
+    "event": {
+      "zone_event": {
+        "name": "Zone {zone} event",
+        "state_attributes": {
+          "event_type": {
+            "state": {
+              "started": "Started",
+              "ready": "Ready",
+              "paused": "Paused",
+              "resumed": "Resumed",
+              "finished": "Finished",
+              "stopped": "Stopped"
+            }
+          }
+        }
+      }
+    }
+  },
+  "exceptions": {
+    "auth_failed": {
+      "message": "VeSync rejected the login; reconfigure the account."
+    },
+    "cannot_connect": {
+      "message": "Could not reach VeSync ({error})."
+    },
+    "device_not_found": {
+      "message": "The air fryer was not found in the VeSync account."
+    },
+    "poll_failed": {
+      "message": "Updating the air fryer failed: {error}"
+    },
+    "poll_timeout": {
+      "message": "VeSync did not answer in time."
+    },
+    "start_in_progress": {
+      "message": "A start is already in progress; wait for it to finish."
+    },
+    "zone_busy": {
+      "message": "Zone {zone} is busy ({status}); stop it first."
+    },
+    "other_zone_active": {
+      "message": "Zone {zone} is active. The SwitchBot is not pressed while another zone runs, because the start/pause button could pause it."
+    },
+    "both_needs_equal_settings": {
+      "message": "With the SwitchBot both zones can only start together with identical settings (one press). Use Match start or start the zones one at a time."
+    },
+    "command_rejected": {
+      "message": "The air fryer or VeSync refused the command: {error}"
+    },
+    "command_timeout": {
+      "message": "The command to VeSync timed out."
+    },
+    "waiting_for_button": {
+      "message": "The air fryer accepted the program but waits for its start button. Press start on the fryer, or configure a SwitchBot."
+    },
+    "start_not_confirmed": {
+      "message": "The start was accepted by the API but VeSync did not report the zone cooking within {timeout} s."
+    },
+    "not_ready": {
+      "message": "The air fryer did not report 'ready' within {timeout} s; the SwitchBot was not pressed."
+    },
+    "not_confirmed_after_press": {
+      "message": "The SwitchBot pressed the button, but VeSync did not report cooking within {timeout} s."
+    },
+    "ready_start_unavailable": {
+      "message": "The installed pyvesync version does not support the ready-start request needed for the SwitchBot route."
+    },
+    "not_reachable": {
+      "message": "The air fryer could not be read ({error})."
+    },
+    "device_offline": {
+      "message": "VeSync reports the air fryer as offline."
+    },
+    "switchbot_not_configured": {
+      "message": "No SwitchBot entity configured."
+    },
+    "switchbot_wrong_domain": {
+      "message": "{entity_id} is not a button or switch."
+    },
+    "switchbot_unavailable": {
+      "message": "SwitchBot {entity_id} is unavailable."
+    },
+    "switchbot_switch_mode": {
+      "message": "SwitchBot {entity_id} is in switch mode; set it to press mode."
+    },
+    "switchbot_failed": {
+      "message": "Pressing SwitchBot {entity_id} failed ({error})."
+    },
+    "stop_rejected": {
+      "message": "Stopping zone {zone} was refused: {error}"
+    },
+    "stop_not_confirmed": {
+      "message": "VeSync did not confirm the stop within {timeout} s."
+    },
+    "program_not_supported": {
+      "message": "This air fryer has no program {program}."
+    },
+    "temperature_out_of_range": {
+      "message": "{temperature} is outside {min}-{max} for {program}."
+    },
+    "time_out_of_range": {
+      "message": "{minutes} min is outside 1-{max} min for {program}."
+    },
+    "unknown_device": {
+      "message": "Choose a COSORI TwinFry device."
+    },
+    "entry_not_loaded": {
+      "message": "The air fryer is not loaded."
+    }
+  },
+  "services": {
+    "start_cook": {
+      "name": "Start cook",
+      "description": "Start a cook after an explicit request. Optional values replace the staged settings of the zone first. Returns only after VeSync confirms the zone is cooking.",
+      "fields": {
+        "device_id": {
+          "name": "Air fryer",
+          "description": "The COSORI TwinFry device."
+        },
+        "zone": {
+          "name": "Zone",
+          "description": "Which zone(s)."
+        },
+        "program": {
+          "name": "Program",
+          "description": "Program to stage first (loads its defaults)."
+        },
+        "temperature": {
+          "name": "Temperature",
+          "description": "Temperature to stage."
+        },
+        "duration": {
+          "name": "Cook time",
+          "description": "Minutes to stage."
+        },
+        "method": {
+          "name": "Start method",
+          "description": "Overrides the configured start method once."
+        }
+      }
+    },
+    "stop_cook": {
+      "name": "Stop cook",
+      "description": "End the cook (or a loaded program) and wait until VeSync reports idle.",
+      "fields": {
+        "device_id": {
+          "name": "Air fryer",
+          "description": "The COSORI TwinFry device."
+        },
+        "zone": {
+          "name": "Zone",
+          "description": "Which zone(s)."
+        }
+      }
+    }
+  }
+}
