@@ -16,6 +16,17 @@ the requirement is pinned to ``pyvesync>=3.5.0,<3.6`` and why
 disables only the SwitchBot route, never silently sends a different request.
 
 Everything else (native start, stop, polling) uses pyvesync's public API.
+
+Device type fallback
+--------------------
+pyvesync matches the ``deviceType`` the cloud reports against a fixed list,
+dropping at most one trailing segment. Newer TwinFry variants such as the 2026
+ceramic ``CAF-TF101S-AEUR-C`` have two segments after the model, so pyvesync
+3.5.0 skips them. ``install_device_type_fallback()`` wraps the lookup pyvesync's
+device container uses: only for types starting with ``CAF-TF101S`` or
+``CAF-TF102S`` it drops trailing segments until the type resolves, and only
+accepts a result that is the dual-chamber fryer class. Every other device
+type resolves exactly as before.
 """
 
 from __future__ import annotations
@@ -24,7 +35,9 @@ from dataclasses import replace
 import logging
 from typing import TYPE_CHECKING, Any
 
+from pyvesync import device_container
 from pyvesync.const import BYPASSV2_SUB_DEVICE_PAYLOAD, AirFryerChamber
+from pyvesync.device_map import get_device_config
 from pyvesync.models import fryer_models
 from pyvesync.utils.helpers import Helpers
 
@@ -44,6 +57,37 @@ _PRIVATE_HELPERS = (
     "_get_sync_type",
     "call_bypassv2_api",
 )
+
+
+_DUAL_FRYER_CLASS = "VeSyncDualAirFryer"
+_TWINFRY_PREFIXES = ("CAF-TF101S", "CAF-TF102S")
+
+
+def resolve_device_config(device_type: str | None) -> Any:
+    """Look up a device type, with a fallback for TwinFry variant suffixes."""
+    config = get_device_config(device_type) if device_type else None
+    if config is not None or not device_type:
+        return config
+    if not device_type.upper().startswith(_TWINFRY_PREFIXES):
+        return None
+    parts = device_type.split("-")
+    for keep in range(len(parts) - 1, 1, -1):
+        candidate = "-".join(parts[:keep])
+        config = get_device_config(candidate)
+        if config is not None and config.class_name == _DUAL_FRYER_CLASS:
+            _LOGGER.debug("Device type %s handled as %s", device_type, candidate)
+            return config
+    return None
+
+
+resolve_device_config.twinfry_fallback = True  # type: ignore[attr-defined]
+
+
+def install_device_type_fallback() -> None:
+    """Make pyvesync's device container use ``resolve_device_config`` (idempotent)."""
+    if getattr(device_container.get_device_config, "twinfry_fallback", False):
+        return
+    device_container.get_device_config = resolve_device_config
 
 
 class InvalidSettingsError(ValueError):

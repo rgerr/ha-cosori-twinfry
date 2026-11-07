@@ -41,6 +41,15 @@ valt terug op het type zonder laatste segment (`CAF-TF101S`) en vindt dan de
 TF101S-map. Gecontroleerd in de testomgeving:
 `get_device_config('CAF-TF101S-AEUR') → ('CAF-TF101S', 'VeSyncDualAirFryer')`.
 
+`CAF-TF101S-AEUR-C` (2026-uitvoering met keramische coating, gezien als
+MPN bij MediaMarkt) herkent pyvesync 3.5.0 **niet**: na het weglaten van één
+segment blijft `CAF-TF101S-AEUR` over, dat niet letterlijk in `dev_types`
+staat. Of het apparaat dit type ook aan de cloud rapporteert, is onbekend
+(bij de bestaande captures is het cloudtype korter dan het winkelnummer).
+De integratie bevat daarom een terugval (`fryer_ext.resolve_device_config`)
+die alleen voor `CAF-TF101S*`/`CAF-TF102S*` extra achtervoegsels weglaat en
+alleen de TwinFry-klasse accepteert.
+
 Let op de naamverwarring: pyvesync's `VeSyncDualBlazeFryer` is de **CAF-P583S**
 (één mand, twee verwarmingselementen). De "Dual Blaze **TwinFry**" (CAF-TF101S) is
 `VeSyncDualAirFryer`.

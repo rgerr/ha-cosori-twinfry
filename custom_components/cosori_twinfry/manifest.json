@@ -1,14 +1,23 @@
 {
   "domain": "cosori_twinfry",
   "name": "COSORI TwinFry",
-  "after_dependencies": ["switchbot", "switchbot_cloud"],
-  "codeowners": ["@rgerr"],
+  "after_dependencies": [
+    "switchbot",
+    "switchbot_cloud"
+  ],
+  "codeowners": [
+    "@rgerr"
+  ],
   "config_flow": true,
   "documentation": "https://github.com/rgerr/ha-cosori-twinfry",
   "integration_type": "device",
   "iot_class": "cloud_polling",
   "issue_tracker": "https://github.com/rgerr/ha-cosori-twinfry/issues",
-  "loggers": ["pyvesync"],
-  "requirements": ["pyvesync>=3.5.0,<3.6"],
-  "version": "0.1.0"
+  "loggers": [
+    "pyvesync"
+  ],
+  "requirements": [
+    "pyvesync>=3.5.0,<3.6"
+  ],
+  "version": "0.1.1"
 }

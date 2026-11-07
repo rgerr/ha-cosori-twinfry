@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import pytest
+from pyvesync import device_container
 from pyvesync.const import AirFryerChamber
 
 from custom_components.cosori_twinfry.client import async_login_and_discover
@@ -13,8 +14,10 @@ from custom_components.cosori_twinfry.fryer_ext import (
     build_recipe,
     check_compatible,
     default_settings,
+    install_device_type_fallback,
     last_error,
     last_poll_inner_result,
+    resolve_device_config,
     supported_programs,
     temp_limits,
 )
@@ -45,6 +48,32 @@ async def test_aeur_model_number_is_recognised() -> None:
     cloud.devices = [item]
     device = await _device(cloud)
     assert type(device).__name__ == "VeSyncDualAirFryer"
+
+
+@pytest.mark.parametrize(
+    "device_type", ["CAF-TF101S-AEUR-C", "CAF-TF101S-WEUR-C", "CAF-TF102S-AEU-C"]
+)
+async def test_variant_suffix_is_recognised(device_type: str) -> None:
+    """2026 ceramic TwinFry (MPN CAF-TF101S-AEUR-C) and similar variants."""
+    cloud = FakeCloud()
+    item = cloud.device_item()
+    item["deviceType"] = device_type
+    cloud.devices = [item]
+    device = await _device(cloud)
+    assert type(device).__name__ == "VeSyncDualAirFryer"
+    assert device.device_type == device_type
+
+
+def test_fallback_leaves_other_devices_alone() -> None:
+    install_device_type_fallback()
+    install_device_type_fallback()  # idempotent
+    assert device_container.get_device_config is resolve_device_config
+    # Exact matches are unchanged.
+    assert resolve_device_config("CAF-DC601S-WUS").class_name == "VeSyncTurboBlazeFryer"
+    # Unknown types outside the TwinFry family stay unknown.
+    assert resolve_device_config("CAF-ZZ999S-AEU-C") is None
+    assert resolve_device_config("LUH-ZZZZ-WEU-X-Y") is None
+    assert resolve_device_config("") is None
 
 
 async def test_programs_limits_and_defaults() -> None:

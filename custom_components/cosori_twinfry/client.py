@@ -10,6 +10,7 @@ from pyvesync import VeSync
 from pyvesync.utils.errors import VeSyncLoginError
 
 from .const import API_TIMEOUT
+from .fryer_ext import install_device_type_fallback
 
 if TYPE_CHECKING:
     from homeassistant.core import HomeAssistant
@@ -34,6 +35,7 @@ async def async_login_and_discover(manager: VeSync) -> list[VeSyncDualAirFryer]:
     Raises the pyvesync errors (VeSyncLoginError, VeSyncServerError, ...)
     and TimeoutError unchanged; the callers map them.
     """
+    install_device_type_fallback()  # recognise e.g. CAF-TF101S-AEUR-C
     async with asyncio.timeout(API_TIMEOUT):
         if not await manager.login():
             raise VeSyncLoginError("VeSync login was not accepted")

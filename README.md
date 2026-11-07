@@ -1,13 +1,14 @@
 # COSORI TwinFry voor Home Assistant
 
 Custom integration voor de **COSORI Dual Blaze TwinFry 10L (CAF-TF101S-AEUR)**
-via de VeSync-cloud. Beide kookzones worden afzonderlijk gevolgd en bediend,
+via de VeSync-cloud. Ook de 2026-uitvoering met keramische coating
+(**CAF-TF101S-AEUR-C**) en de CAF-TF102S worden herkend. Beide kookzones worden afzonderlijk gevolgd en bediend,
 en een kookproces kan vanuit Home Assistant worden gestart: native via de
 VeSync-API of, als de airfryer op zijn fysieke startknop wacht, met een
 **SwitchBot Bot (Button Pusher)**.
 
 > **Status: niet op hardware getest.** Alles is getest tegen de echte
-> pyvesync-code met een gesimuleerde airfryer (104 tests, 95 % dekking).
+> pyvesync-code met een gesimuleerde airfryer (108 tests, 95 % dekking).
 > Of de TF101S direct start via de API is nergens aangetoond — ook niet door
 > pyvesync zelf. Zie [docs/hardware-validation.md](docs/hardware-validation.md).
 
