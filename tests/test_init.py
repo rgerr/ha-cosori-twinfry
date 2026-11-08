@@ -171,3 +171,30 @@ async def test_poll_interval_follows_activity(hass: HomeAssistant, cloud: FakeCl
     async_fire_time_changed(hass, dt_util.utcnow() + timedelta(seconds=61))
     await hass.async_block_till_done()
     assert coordinator.update_interval == timedelta(seconds=15)
+
+
+async def test_drawer_on_idle_zone_fires_no_event(hass: HomeAssistant, cloud: FakeCloud) -> None:
+    # Found on hardware (CAF-TF101S-AEUR, 8 Nov 2026): opening the shared
+    # drawer while a zone was idle gave a false "finished" on push-back.
+    cloud.chambers[1] = Chamber(
+        status="cooking", mode="AirFry", set_time=1200, temp=200, remaining=900
+    )
+    events = []
+    hass.bus.async_listen(EVENT_TWINFRY, events.append)
+    entry = await setup_entry(hass)
+
+    cloud.chambers[1] = Chamber(
+        status="pullOut", mode="AirFry", set_time=1200, temp=200, remaining=890
+    )
+    cloud.chambers[2] = Chamber(status="pullOut")
+    await _refresh(hass, entry)
+    cloud.chambers[1] = Chamber(
+        status="cooking", mode="AirFry", set_time=1200, temp=200, remaining=880
+    )
+    cloud.chambers[2] = Chamber()
+    await _refresh(hass, entry)
+    cloud.chambers[1] = Chamber()  # stopped early on the fryer
+    await _refresh(hass, entry)
+
+    seen = [(e.data["zone"], e.data["event"]) for e in events]
+    assert seen == [(1, "paused"), (1, "resumed"), (1, "stopped")]

@@ -7,10 +7,11 @@ en een kookproces kan vanuit Home Assistant worden gestart: native via de
 VeSync-API of, als de airfryer op zijn fysieke startknop wacht, met een
 **SwitchBot Bot (Button Pusher)**.
 
-> **Status: niet op hardware getest.** Alles is getest tegen de echte
-> pyvesync-code met een gesimuleerde airfryer (108 tests, 95 % dekking).
-> Of de TF101S direct start via de API is nergens aangetoond — ook niet door
-> pyvesync zelf. Zie [docs/hardware-validation.md](docs/hardware-validation.md).
+> **Status: op hardware getest (CAF-TF101S-AEUR, 8 november 2026).**
+> Native starten, stoppen, match-start, mand eruit en stroomuitval werken.
+> Nog niet getest: een kookproces gestart in de app of op het apparaat, en de
+> SwitchBot-route (voor dit type niet nodig). Zie
+> [docs/hardware-validation.md](docs/hardware-validation.md).
 
 ## Wat het doet
 

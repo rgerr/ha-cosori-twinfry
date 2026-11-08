@@ -110,6 +110,33 @@ def test_parse_missing_chamber_is_idle() -> None:
     assert snap.zone_2.ends_at(NOW) is None
 
 
+def test_parse_drawer_out_on_idle_zone() -> None:
+    # Seen on a CAF-TF101S-AEUR: with the shared drawer out, an idle zone
+    # reports pullOut with set time 0 and a default mode.
+    snap = parse_multi_status(
+        {
+            "statusList": [
+                _item(1, "pullOut", mode="AirFry", cookSetTime=0, currentRemainingTime=0),
+                _item(2, "pullOut", mode="AirFry", cookSetTime=0, currentRemainingTime=0),
+            ]
+        },
+        NOW,
+    )
+    assert snap.zone_1.status == ZoneStatus.BASKET_OUT
+    assert snap.zone_1.program is None
+    assert not snap.zone_1.has_cook
+    assert snap.device_status == DeviceStatus.IDLE
+
+
+def test_parse_drawer_out_during_cook() -> None:
+    snap = parse_multi_status(
+        {"statusList": [_item(1, "pullOut", cookSetTime=180, currentRemainingTime=159)]}, NOW
+    )
+    assert snap.zone_1.has_cook
+    assert snap.zone_1.program == Program.AIRFRY
+    assert snap.device_status == DeviceStatus.PAUSED
+
+
 def test_parse_whole_basket() -> None:
     snap = parse_multi_status({"statusList": [_item(3, "cooking")], "workChamber": 3}, NOW)
     assert snap.whole_basket
@@ -157,6 +184,15 @@ def _zone(status: ZoneStatus, remaining: int | None = None) -> ZoneSnapshot:
 )
 def test_classify_transition(before, after, elapsed, expected) -> None:
     assert classify_transition(before, after, elapsed) == expected
+
+
+@pytest.mark.parametrize("status", [ZoneStatus.BASKET_OUT, ZoneStatus.PAUSED])
+def test_no_event_when_idle_zone_drawer_returns(status: ZoneStatus) -> None:
+    # One drawer for both zones: an idle zone reports pullOut too.
+    before = _zone(status, 0)
+    after = _zone(ZoneStatus.STANDBY)
+    assert classify_transition(before, after, 30, had_cook=False) is None
+    assert classify_transition(before, after, 30, had_cook=True) == ZoneEvent.FINISHED
 
 
 def test_no_event_without_previous() -> None:

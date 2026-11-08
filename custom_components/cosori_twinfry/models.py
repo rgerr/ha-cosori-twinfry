@@ -83,6 +83,17 @@ class ZoneSnapshot:
         return self.status in ACTIVE_STATUSES
 
     @property
+    def has_cook(self) -> bool:
+        """Return True if a cook is running or paused (not just an open drawer).
+
+        The drawer is shared by both zones. When it is pulled out, an idle zone
+        reports "pullOut" as well, with a set time of 0.
+        """
+        if self.status in (ZoneStatus.COOKING, ZoneStatus.HOLD):
+            return True
+        return self.status in (ZoneStatus.PAUSED, ZoneStatus.BASKET_OUT) and bool(self.set_time_s)
+
+    @property
     def is_cooking(self) -> bool:
         """Return True while cooking."""
         return self.status == ZoneStatus.COOKING
@@ -133,7 +144,7 @@ class FryerSnapshot:
         statuses = {self.zone_1.status, self.zone_2.status}
         if ZoneStatus.COOKING in statuses or ZoneStatus.HOLD in statuses:
             return DeviceStatus.COOKING
-        if ZoneStatus.PAUSED in statuses or ZoneStatus.BASKET_OUT in statuses:
+        if self.zone_1.has_cook or self.zone_2.has_cook:
             return DeviceStatus.PAUSED
         if ZoneStatus.READY in statuses:
             return DeviceStatus.READY
@@ -155,6 +166,10 @@ def _zone_from_item(item: dict[str, Any]) -> ZoneSnapshot:
     status = normalise_status(item.get("cookStatus"))
     if status == ZoneStatus.STANDBY:
         return ZoneSnapshot(status=status)
+    set_time = _int_or_none(item.get("cookSetTime"))
+    if status in (ZoneStatus.PAUSED, ZoneStatus.BASKET_OUT) and not set_time:
+        # Drawer out on an idle zone: the reported mode is only a default.
+        return ZoneSnapshot(status=status, set_time_s=set_time)
     api_mode = item.get("mode") or None
     return ZoneSnapshot(
         status=status,
@@ -162,7 +177,7 @@ def _zone_from_item(item: dict[str, Any]) -> ZoneSnapshot:
         api_mode=api_mode,
         recipe=item.get("recipeName") or None,
         set_temperature=_int_or_none(item.get("cookTemp")) or None,
-        set_time_s=_int_or_none(item.get("cookSetTime")),
+        set_time_s=set_time,
         remaining_s=_int_or_none(item.get("currentRemainingTime")),
         total_remaining_s=_int_or_none(item.get("totalTimeRemaining")),
     )
@@ -221,12 +236,18 @@ def classify_transition(
     previous: ZoneSnapshot | None,
     current: ZoneSnapshot,
     elapsed_s: float,
+    had_cook: bool = True,
 ) -> ZoneEvent | None:
     """Return the event for a zone status change between two polls.
 
     ``elapsed_s`` is the time between the two polls; it is used to decide
     whether a cook that disappeared had (almost) run out (finished) or was
     ended early (stopped).
+
+    ``had_cook`` tells whether a cook was running in this zone before it was
+    paused. The TwinFry has one drawer for both zones, so pulling it out
+    reports "pullOut" for an idle zone too. Pushing it back must then not
+    count as the end of a cook.
     """
     if previous is None or previous.status == current.status:
         return None
@@ -243,6 +264,8 @@ def classify_transition(
             return ZoneEvent.PAUSED
         return None
     if current.status == ZoneStatus.STANDBY and previous.is_active:
+        if not had_cook and previous.status in (ZoneStatus.PAUSED, ZoneStatus.BASKET_OUT):
+            return None
         remaining = previous.remaining_s
         if previous.status in (ZoneStatus.COOKING, ZoneStatus.HOLD) and remaining is not None:
             remaining = remaining - elapsed_s

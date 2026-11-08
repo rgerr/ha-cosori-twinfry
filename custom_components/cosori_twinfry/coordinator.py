@@ -25,11 +25,13 @@ from .const import (
     DOMAIN,
     EVENT_TWINFRY,
     ZoneEvent,
+    ZoneStatus,
 )
 from .fryer_ext import last_error, last_poll_inner_result
 from .models import (
     FryerSnapshot,
     UnreadableStatusError,
+    ZoneSnapshot,
     classify_transition,
     offline_snapshot,
     parse_multi_status,
@@ -77,6 +79,9 @@ class TwinFryCoordinator(DataUpdateCoordinator[FryerSnapshot]):
         self.device = device
         self._event_listeners: list[ZoneEventListener] = []
         self.last_error: str | None = None
+        # Per zone: was a cook running before the zone was paused? The drawer
+        # is shared, so an idle zone also reports "pullOut" when it is opened.
+        self._had_cook: dict[int, bool] = {1: False, 2: False}
 
     @staticmethod
     def _idle_interval(entry: ConfigEntry) -> int:
@@ -167,11 +172,25 @@ class TwinFryCoordinator(DataUpdateCoordinator[FryerSnapshot]):
     @callback
     def _async_emit_events(self, previous: FryerSnapshot | None, current: FryerSnapshot) -> None:
         """Fire zone events for status changes between two confirmed polls."""
-        if previous is None or not previous.online or not current.online:
+        if not current.online:
+            return
+        if previous is None or not previous.online:
+            for number in (1, 2):
+                self._had_cook[number] = self._cook_running(
+                    current.zone(number), self._had_cook[number], first=True
+                )
             return
         elapsed = (current.polled_at - previous.polled_at).total_seconds()
         for number in (1, 2):
-            event = classify_transition(previous.zone(number), current.zone(number), elapsed)
+            event = classify_transition(
+                previous.zone(number),
+                current.zone(number),
+                elapsed,
+                had_cook=self._had_cook[number],
+            )
+            self._had_cook[number] = self._cook_running(
+                current.zone(number), self._had_cook[number]
+            )
             if event is None:
                 continue
             zone = current.zone(number)
@@ -186,6 +205,17 @@ class TwinFryCoordinator(DataUpdateCoordinator[FryerSnapshot]):
             self.hass.bus.async_fire(EVENT_TWINFRY, data)
             for listener in list(self._event_listeners):
                 listener(number, event, data)
+
+    @staticmethod
+    def _cook_running(zone: ZoneSnapshot, had_cook: bool, first: bool = False) -> bool:
+        """Return whether a cook is running or paused in this zone."""
+        if zone.status in (ZoneStatus.COOKING, ZoneStatus.HOLD):
+            return True
+        if zone.status in (ZoneStatus.PAUSED, ZoneStatus.BASKET_OUT):
+            if first:  # no history: a paused cook has a set time, an open drawer not
+                return zone.has_cook
+            return had_cook and zone.has_cook
+        return False
 
     def _device_registry_id(self) -> str | None:
         registry = dr.async_get(self.hass)

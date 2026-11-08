@@ -1,27 +1,28 @@
 # Hardwarevalidatie – protocol en resultaten
 
-## Huidige stand (7 november 2026)
+## Huidige stand (8 november 2026)
 
 | Test | Mock / simulator | Fysieke CAF-TF101S-AEUR |
 | --- | --- | --- |
-| Detectie van het apparaat | ✅ getest | ⬜ niet getest |
-| Uitlezen van beide zones | ✅ getest | ⬜ niet getest |
-| Temperatuur en tijd instellen | ✅ getest (request-inhoud gecontroleerd) | ⬜ niet getest |
-| Starten zone 1 (native) | ✅ getest | ⬜ niet getest |
-| Starten zone 2 (native) | ✅ getest | ⬜ niet getest |
-| Starten beide zones | ✅ getest | ⬜ niet getest |
-| Match-start | ✅ getest | ⬜ niet getest |
-| Stoppen per zone | ✅ getest | ⬜ niet getest |
-| Stoppen beide zones | ✅ getest | ⬜ niet getest |
-| Starten via SwitchBot | ✅ getest (nep-Bot) | ⬜ niet getest |
-| Verificatie werkelijke kookstatus | ✅ getest | ⬜ niet getest |
+| Detectie van het apparaat | ✅ getest | ✅ werkt (H1) |
+| Uitlezen van beide zones | ✅ getest | ✅ werkt (H2) |
+| Temperatuur en tijd instellen | ✅ getest (request-inhoud gecontroleerd) | ✅ werkt (H5, H6) |
+| Starten zone 1 (native) | ✅ getest | ✅ werkt (H5) |
+| Starten zone 2 (native) | ✅ getest | ✅ werkt (H6) |
+| Starten zone 2 terwijl zone 1 kookt | ✅ getest | ✅ werkt, zone 1 loopt door (H7) |
+| Starten beide zones (één knop) | ✅ getest | ⬜ niet getest |
+| Match-start | ✅ getest | ✅ werkt, sync-modus aan (H8) |
+| Stoppen per zone | ✅ getest | ✅ werkt (H4) |
+| Stoppen beide zones | ✅ getest | ✅ werkt (H9) |
+| Mand eruit en terug tijdens koken | ✅ getest | ✅ werkt (H10) |
+| Stroom eraf en terug | ✅ getest | ✅ werkt (H11) |
+| Kookproces gestart in de app of op het apparaat | ✅ getest | ⬜ niet getest (H3) |
+| Starten via SwitchBot | ✅ getest (nep-Bot) | ⬜ niet nodig: native starten werkt |
+| Verificatie werkelijke kookstatus | ✅ getest | ✅ werkt |
 
-**Niets is op fysieke hardware getest.** Er waren geen VeSync-inloggegevens
-beschikbaar en de gekoppelde Home Assistant-instantie toonde geen VeSync- of
-SwitchBot-entiteiten. De simulator gebruikt de echte pyvesync-code; alleen het
-netwerk is nagebootst. Het gedrag van de airfryer zelf (vooral wat
-`readyStart` doet en wat de fysieke startknop doet) is in de simulator een
-**aanname** en precies wat hieronder op hardware moet worden vastgesteld.
+**Native starten werkt op de TF101S.** De airfryer gaat direct koken; er is
+geen druk op de fysieke startknop nodig. De SwitchBot-route blijft
+beschikbaar maar is voor dit type niet nodig.
 
 ## Voorbereiding
 
@@ -87,10 +88,30 @@ integratie te drukken terwijl een andere zone actief is.
 
 ## Resultaten
 
-Vul deze tabel in na de tests (en werk de bovenste tabel bij).
+Getest op 8 november 2026 met een CAF-TF101S-AEUR, startmethode Native,
+Opwarmen 80 °C, 2 of 3 minuten, lege manden. Firmwareversie niet uitgelezen
+(VeSync gaf er geen door).
 
-| # | Datum | Firmware | Uitkomst | Opmerking |
-| --- | --- | --- | --- | --- |
-| H1 | | | | |
-| H5 | | | | |
-| S1 | | | | |
+| # | Uitkomst | Opmerking |
+| --- | --- | --- |
+| H1 | ✅ | Gevonden als Dual Blaze TwinFry 10L. |
+| H2 | ✅ | Beide zones Stand-by, online aan. |
+| H3 | ⬜ | Niet getest. |
+| H4 | ✅ | Zone 2 binnen 5 s gestopt, event `stopped`. |
+| H5 | ✅ | Start bevestigd na 4 s (`chamber_1_native_accepted`, `chamber_1_cooking_confirmed`), na 2 min vanzelf klaar, event `finished`. Op het display bevestigd. |
+| H6 | ✅ | Zone 2 kookt na 6 s. |
+| H7 | ✅ | Zone 2 gestart terwijl zone 1 kookte; zone 1 pauzeert niet. Op het display bevestigd. |
+| H8 | ✅ | Beide zones koken na 6 s met dezelfde instellingen, sync-modus `sync`. |
+| H9 | ✅ | Beide zones binnen 6 s Stand-by, events `stopped`. |
+| H10 | ✅ | `paused` bij lade eruit, `resumed` bij terugduwen; klaar-om schuift mee op. |
+| H11 | ✅ | Offline gemeld bij de eerstvolgende poll, zones onbeschikbaar, geen oude waarden en geen events; na stroom terug vanzelf weer online. |
+| Dubbele start | ✅ | Tweede start op een actieve zone geweigerd. |
+
+### Gevonden en opgelost
+
+De lade is gedeeld door beide zones. Trek je hem uit terwijl een zone niet
+kookt, dan meldt ook die zone `pullOut`, met ingestelde tijd 0 en standaard
+mode `AirFry`. Na terugduwen gaf de integratie voor die zone ten onrechte het
+event `finished`, en de apparaatstatus stond op Gepauzeerd. Een zone telt nu
+alleen als gepauzeerd kookproces als er een ingestelde tijd is en er eerder
+een kookproces liep.
