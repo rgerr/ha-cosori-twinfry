@@ -2,8 +2,8 @@
 
 Custom integration voor de **COSORI Dual Blaze TwinFry 10L (CAF-TF101S-AEUR)**
 via de VeSync-cloud. Ook de 2026-uitvoering met keramische coating
-(**CAF-TF101S-AEUR-C**) en de CAF-TF102S worden herkend. Beide kookzones worden afzonderlijk gevolgd en bediend,
-en een kookproces kan vanuit Home Assistant worden gestart: native via de
+(**CAF-TF101S-AEUR-C**) en de CAF-TF102S worden herkend. Beide kookzones
+worden afzonderlijk gevolgd en bediend, en een kookproces kan vanuit Home Assistant worden gestart: native via de
 VeSync-API of, als de airfryer op zijn fysieke startknop wacht, met een
 **SwitchBot Bot (Button Pusher)**.
 
@@ -183,8 +183,9 @@ Daarnaast vuurt de integratie het event `cosori_twinfry_event` met `zone`,
 
 ## Bekende beperkingen
 
-1. **Niet op hardware getest.** Native starten op de TF101S is niet bewezen;
-   het gedrag van `readyStart` en van de fysieke Start-knop is aangenomen.
+1. **Getest op één apparaat** (CAF-TF101S-AEUR, firmware onbekend). Niet
+   getest: een kookproces gestart in de app of op het apparaat, de
+   SwitchBot-route, de CAF-TF101S-AEUR-C en de CAF-TF102S.
 2. **Geen actuele temperatuur**: het apparaat rapporteert die niet.
 3. **Geen pauze/hervat/voorverwarmen** vanuit HA (geen API).
 4. **Sync met verschillende tijden** (beide zones tegelijk klaar) wordt niet
@@ -209,7 +210,9 @@ pytest
 
 Home Assistant draait niet op Windows; gebruik Linux, WSL of de
 meegeleverde GitHub Actions-workflows (`tests.yml` en `validate.yml` met
-hassfest en de HACS-validatie). Vertalingen worden gegenereerd met
+hassfest en de HACS-validatie). Hassfest meldt tot HA met pyvesync 3.5.0
+uitkomt een conflict met de vastgepinde 3.4.2 van HA 2026.10; die stap mag
+daarom voorlopig falen zonder de workflow rood te maken. Vertalingen worden gegenereerd met
 `python scripts/gen_translations.py custom_components/cosori_twinfry`.
 
 Documentatie:
@@ -220,3 +223,7 @@ Documentatie:
   startstrategie, foutafhandeling.
 - [docs/hardware-validation.md](docs/hardware-validation.md) – testprotocol
   voor de echte airfryer.
+
+## Licentie
+
+MIT, zie [LICENSE](LICENSE).
